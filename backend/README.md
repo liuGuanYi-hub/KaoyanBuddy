@@ -10,6 +10,14 @@ mvn spring-boot:run
 
 默认端口为 `8080`。
 
+本机 MySQL 未配置时，可使用 H2 本地开发库启动：
+
+```bash
+mvn spring-boot:run -Dspring-boot.run.profiles=dev
+```
+
+H2 数据文件位于 `backend/data/`，不会提交到 Git。
+
 ## 配置
 
 复制 `.env.example`，设置 MySQL、JWT 和 DeepSeek 相关环境变量。未设置 DeepSeek Key 时，AI 问答接口会返回本地降级答复。

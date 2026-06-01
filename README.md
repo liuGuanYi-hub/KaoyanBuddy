@@ -48,6 +48,14 @@ mvn spring-boot:run
 
 后端默认地址为 `http://localhost:8080`。
 健康检查接口为 `GET http://localhost:8080/api/health`。
+如果本机 MySQL 账号还没配置好，可以先使用 H2 本地开发库启动：
+
+```bash
+cd backend
+mvn spring-boot:run -Dspring-boot.run.profiles=dev
+```
+
+H2 开发库文件会保存在 `backend/data/`。
 
 ## 注意事项
 

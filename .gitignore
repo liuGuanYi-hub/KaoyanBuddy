@@ -10,7 +10,11 @@ frontend/.vite/
 
 # Backend
 backend/target/
+backend/data/
 backend/.mvn/wrapper/maven-wrapper.jar
+
+# Local runtime logs
+logs/
 
 # IDE and OS
 .idea/
