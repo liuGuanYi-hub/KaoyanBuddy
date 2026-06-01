@@ -51,7 +51,14 @@ class KaoyanBuddyApplicationTests {
     @Test
     void protectedRoutesRequireJwt() throws Exception {
         mockMvc.perform(get("/api/subjects"))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void healthIsPublic() throws Exception {
+        mockMvc.perform(get("/api/health"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status", is("UP")));
     }
 
     @Test

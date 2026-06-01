@@ -221,6 +221,7 @@ type AiChatResponse = {
 
 接口范围：
 
+- `GET /api/health`
 - `POST /api/auth/register`
 - `POST /api/auth/login`
 - `GET /api/auth/me`

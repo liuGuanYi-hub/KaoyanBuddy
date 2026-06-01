@@ -37,6 +37,7 @@ npm run dev
 ```
 
 前端默认地址为 `http://localhost:5173`。
+当前前端默认启用 Mock 演示模式，不要求后端服务启动。切换真实后端时，在 `frontend/.env` 中设置 `VITE_USE_MOCK=false`。
 
 ### 后端
 
@@ -46,6 +47,7 @@ mvn spring-boot:run
 ```
 
 后端默认地址为 `http://localhost:8080`。
+健康检查接口为 `GET http://localhost:8080/api/health`。
 
 ## 注意事项
 

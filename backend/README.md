@@ -16,6 +16,7 @@ mvn spring-boot:run
 
 ## API
 
+- `GET /api/health`
 - `POST /api/auth/register`
 - `POST /api/auth/login`
 - `GET /api/auth/me`
@@ -25,3 +26,11 @@ mvn spring-boot:run
 - `POST /api/tasks/generate`
 - `GET /api/dashboard/summary`
 - `POST /api/ai/chat`
+
+## 验证
+
+依赖下载和测试会写入 Maven 本地缓存。执行前请先确认 C 盘可接受增量。
+
+```bash
+mvn test
+```

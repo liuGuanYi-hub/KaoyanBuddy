@@ -11,6 +11,7 @@ export default function SubjectsPage() {
   const [form, setForm] = useState(blankForm);
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -28,6 +29,7 @@ export default function SubjectsPage() {
   async function submit(event) {
     event.preventDefault();
     setError('');
+    setSaving(true);
     const payload = { ...form, targetHours: Number(form.targetHours) };
     try {
       if (editingId) {
@@ -40,6 +42,8 @@ export default function SubjectsPage() {
       reload();
     } catch (err) {
       setError(err.message);
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -47,8 +51,13 @@ export default function SubjectsPage() {
     if (!window.confirm('确认删除这个科目及其任务？')) {
       return;
     }
-    await api.deleteSubject(id);
-    reload();
+    setError('');
+    try {
+      await api.deleteSubject(id);
+      reload();
+    } catch (err) {
+      setError(err.message);
+    }
   }
 
   function startEdit(subject) {
@@ -97,9 +106,9 @@ export default function SubjectsPage() {
             onChange={(value) => setForm((current) => ({ ...current, targetHours: value }))}
           />
           {error && <p className="rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">{error}</p>}
-          <button type="submit" className="flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-400 px-4 py-2.5 font-medium text-slate-950 hover:bg-emerald-300">
+          <button type="submit" disabled={saving} className="flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-400 px-4 py-2.5 font-medium text-slate-950 hover:bg-emerald-300 disabled:opacity-60">
             <Plus size={18} aria-hidden="true" />
-            {editingId ? '保存科目' : '添加科目'}
+            {saving ? '保存中...' : editingId ? '保存科目' : '添加科目'}
           </button>
         </form>
       </section>

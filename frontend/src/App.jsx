@@ -31,7 +31,7 @@ export default function App() {
 
   return (
     <Layout activeView={activeView} onViewChange={setActiveView}>
-      <Page />
+      <Page onNavigate={setActiveView} />
     </Layout>
   );
 }

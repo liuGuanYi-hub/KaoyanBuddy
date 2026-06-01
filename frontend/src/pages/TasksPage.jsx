@@ -55,6 +55,7 @@ export default function TasksPage() {
   }, [filters]);
 
   function reloadTasks() {
+    setError('');
     api.listTasks(filters)
       .then(setTasks)
       .catch((err) => setError(err.message));
@@ -129,20 +130,30 @@ export default function TasksPage() {
   }
 
   async function markDone(task) {
-    const nextStatus = task.status === 'DONE' ? 'TODO' : 'DONE';
-    await api.updateTaskStatus(task.id, {
-      status: nextStatus,
-      actualMinutes: nextStatus === 'DONE' ? task.actualMinutes || task.plannedMinutes : task.actualMinutes,
-    });
-    reloadTasks();
+    setError('');
+    try {
+      const nextStatus = task.status === 'DONE' ? 'TODO' : 'DONE';
+      await api.updateTaskStatus(task.id, {
+        status: nextStatus,
+        actualMinutes: nextStatus === 'DONE' ? task.actualMinutes || task.plannedMinutes : task.actualMinutes,
+      });
+      reloadTasks();
+    } catch (err) {
+      setError(err.message);
+    }
   }
 
   async function remove(id) {
     if (!window.confirm('确认删除这个任务？')) {
       return;
     }
-    await api.deleteTask(id);
-    reloadTasks();
+    setError('');
+    try {
+      await api.deleteTask(id);
+      reloadTasks();
+    } catch (err) {
+      setError(err.message);
+    }
   }
 
   return (
@@ -191,7 +202,6 @@ export default function TasksPage() {
             <Select label="优先级" value={form.priority} onChange={(value) => setForm((current) => ({ ...current, priority: value }))} options={priorityText} />
           </div>
           <Field label="实际分钟" type="number" value={form.actualMinutes} onChange={(value) => setForm((current) => ({ ...current, actualMinutes: value }))} />
-          {error && <p className="rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">{error}</p>}
           <button
             type="submit"
             disabled={saving}
@@ -209,7 +219,7 @@ export default function TasksPage() {
             <h2 className="text-lg font-semibold text-white">任务列表</h2>
             <p className="mt-1 text-sm text-slate-400">{filters.date || '全部日期'}</p>
           </div>
-          <div className="grid gap-2 sm:grid-cols-4 lg:w-[680px]">
+          <div className="grid gap-2 sm:grid-cols-5 lg:w-[780px]">
             <input
               type="date"
               value={filters.date}
@@ -224,12 +234,17 @@ export default function TasksPage() {
               <option value="">全部科目</option>
               {subjects.map((subject) => <option key={subject.id} value={subject.id}>{subject.name}</option>)}
             </select>
+            <button type="button" onClick={() => setFilters({ date: '', status: '', subjectId: '' })} className="rounded-lg border border-white/10 px-3 py-2 text-sm text-slate-200 hover:bg-white/10">
+              重置
+            </button>
             <button type="button" onClick={generate} disabled={saving} className="flex items-center justify-center gap-2 rounded-lg border border-emerald-300/30 bg-emerald-400/10 px-3 py-2 text-sm text-emerald-100 hover:bg-emerald-400/20 disabled:opacity-60">
               <CalendarPlus size={16} aria-hidden="true" />
               生成
             </button>
           </div>
         </div>
+
+        {error && <p className="mt-4 rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-200">{error}</p>}
 
         <div className="mt-4">
           {loading ? (
