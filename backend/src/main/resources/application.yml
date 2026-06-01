@@ -1,0 +1,37 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: kaoyan-buddy
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/kaoyan_buddy?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&createDatabaseIfNotExist=true}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:update}
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+  ai:
+    model:
+      chat: ${SPRING_AI_MODEL_CHAT:none}
+    deepseek:
+      api-key: ${DEEPSEEK_API_KEY:}
+      chat:
+        options:
+          model: ${DEEPSEEK_MODEL:deepseek-chat}
+          temperature: ${DEEPSEEK_TEMPERATURE:0.7}
+
+app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+  jwt:
+    secret: ${JWT_SECRET:kaoyan-buddy-development-secret-change-me-please-2026}
+    expiration-minutes: ${JWT_EXPIRATION_MINUTES:10080}
+
+logging:
+  level:
+    org.springframework.security: INFO
