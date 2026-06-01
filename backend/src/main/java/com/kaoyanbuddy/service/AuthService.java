@@ -32,27 +32,30 @@ public class AuthService {
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
-        if (userRepository.existsByUsername(request.username())) {
+        String username = request.username().trim();
+        String email = request.email().trim().toLowerCase();
+        if (userRepository.existsByUsername(username)) {
             throw new BadRequestException("用户名已被使用");
         }
-        if (userRepository.existsByEmail(request.email())) {
+        if (userRepository.existsByEmail(email)) {
             throw new BadRequestException("邮箱已被使用");
         }
 
         UserAccount user = userRepository.save(new UserAccount(
-                request.username().trim(),
-                request.email().trim().toLowerCase(),
+                username,
+                email,
                 passwordEncoder.encode(request.password())
         ));
         return new AuthResponse(jwtService.generateToken(user), UserResponse.from(user));
     }
 
     public AuthResponse login(LoginRequest request) {
+        String username = request.username().trim();
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                request.username(),
+                username,
                 request.password()
         ));
-        UserAccount user = userRepository.findByUsername(request.username())
+        UserAccount user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new BadRequestException("用户不存在"));
         return new AuthResponse(jwtService.generateToken(user), UserResponse.from(user));
     }

@@ -4,6 +4,7 @@ import com.kaoyanbuddy.domain.StudyTask;
 import com.kaoyanbuddy.domain.TaskStatus;
 import com.kaoyanbuddy.domain.UserAccount;
 import com.kaoyanbuddy.dto.DashboardSummaryResponse;
+import com.kaoyanbuddy.exception.BadRequestException;
 import com.kaoyanbuddy.repository.StudyTaskRepository;
 import java.time.LocalDate;
 import java.util.Comparator;
@@ -25,6 +26,10 @@ public class DashboardService {
     public DashboardSummaryResponse summary(UserAccount user, LocalDate start, LocalDate end) {
         LocalDate resolvedEnd = end == null ? LocalDate.now() : end;
         LocalDate resolvedStart = start == null ? resolvedEnd.minusDays(6) : start;
+        if (resolvedStart.isAfter(resolvedEnd)) {
+            throw new BadRequestException("开始日期不能晚于结束日期");
+        }
+
         List<StudyTask> tasks = taskRepository.findByUserAndTaskDateBetweenOrderByTaskDateAscCreatedAtAsc(
                 user,
                 resolvedStart,

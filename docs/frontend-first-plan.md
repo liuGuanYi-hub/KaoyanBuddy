@@ -215,31 +215,212 @@ type AiChatResponse = {
 };
 ```
 
-## 5. 后端后补清单
+## 5. 后端开发计划
 
-后端阶段只补接口和服务能力，不规划单独的后台管理页面。
+后端阶段只补接口和服务能力，不规划单独的后台管理页面。后端目标是稳定承接前端 API 契约，让 `frontend/` 从 Mock 模式平滑切换到真实 API。
 
-接口范围：
+### 5.1 后端目标
+
+- 提供与 Mock 数据契约一致的 REST API。
+- 使用 JWT 完成登录认证和用户数据隔离。
+- 使用 MySQL 持久化用户、科目和学习任务。
+- 提供看板聚合统计，避免前端自行拼复杂统计。
+- 接入 DeepSeek；未配置密钥或服务异常时返回可用的 fallback。
+- 提供自动化测试覆盖主要业务路径。
+
+### 5.2 后端里程碑
+
+#### 里程碑一：基础设施与启动体验
+
+开发内容：
+
+- 固定后端目录为 `backend/`，应用包名为 `com.kaoyanbuddy`。
+- 保留 `GET /api/health` 作为公开健康检查接口。
+- 完成环境变量模板：数据库、JWT、CORS、DeepSeek。
+- 配置 CORS 默认允许 `http://localhost:5173`。
+- 配置统一异常响应，前端能读取 `message` 和字段错误。
+
+验收标准：
+
+- 未登录访问受保护接口返回 `401`。
+- 健康检查无需 token 即可返回 `UP`。
+- 后端启动不要求 DeepSeek Key。
+
+#### 里程碑二：认证与用户隔离
+
+开发内容：
+
+- `POST /api/auth/register`：创建用户，用户名和邮箱唯一。
+- `POST /api/auth/login`：校验密码，返回 JWT 和用户信息。
+- `GET /api/auth/me`：根据 token 返回当前用户。
+- 使用 BCrypt 存储密码哈希。
+- 所有业务查询都以当前用户为边界，禁止跨用户访问数据。
+
+验收标准：
+
+- 注册、登录、当前用户接口可串联。
+- 错误密码不能登录。
+- 用户 A 不能访问用户 B 的科目或任务。
+
+#### 里程碑三：科目与任务接口
+
+开发内容：
+
+- 科目支持列表、新增、编辑、删除。
+- 任务支持列表筛选、新增、编辑、删除、状态更新。
+- 任务筛选支持 `date`、`status`、`subjectId`。
+- 删除科目时同步处理该用户下关联任务。
+- 每日任务生成接口按已有科目生成默认复习任务；无科目时可创建默认科目。
+
+验收标准：
+
+- 前端任务页和科目页切换真实 API 后行为与 Mock 一致。
+- 任务完成时可记录实际学习分钟和完成时间。
+- 重复生成同一天任务不会无限堆叠同名默认任务。
+
+#### 里程碑四：看板统计与 AI 问答
+
+开发内容：
+
+- `GET /api/dashboard/summary` 聚合统计任务总数、完成数、完成率、计划/实际时长、每日趋势、科目分布。
+- `POST /api/ai/chat` 接收用户问题并返回 `{ answer, fallback }`。
+- DeepSeek 可用时返回真实答复。
+- DeepSeek 未配置、禁用或异常时返回本地 fallback 答复。
+
+验收标准：
+
+- 看板统计与任务状态变化同步。
+- AI fallback 不阻塞页面主流程。
+- 前端可以明确展示 `fallback` 状态。
+
+#### 里程碑五：联调与验收
+
+开发内容：
+
+- 前端 `.env` 设置 `VITE_USE_MOCK=false`。
+- 前后端联调登录、科目、任务、看板、AI 流程。
+- 对接口错误、token 过期、空数据、DeepSeek fallback 做手动验收。
+- 补齐后端测试和 README 启动说明。
+
+验收标准：
+
+- 前端关闭 Mock 后无需重写页面组件。
+- 所有核心流程在真实 API 下可走通。
+- 后端测试覆盖认证、用户隔离、任务状态、看板统计和 AI fallback。
+
+### 5.3 API 范围
 
 - `GET /api/health`
 - `POST /api/auth/register`
 - `POST /api/auth/login`
 - `GET /api/auth/me`
-- `GET/POST/PUT/DELETE /api/subjects`
-- `GET/POST/PUT/DELETE /api/tasks`
+- `GET /api/subjects`
+- `POST /api/subjects`
+- `PUT /api/subjects/{id}`
+- `DELETE /api/subjects/{id}`
+- `GET /api/tasks?date=&status=&subjectId=`
+- `POST /api/tasks`
+- `PUT /api/tasks/{id}`
 - `PATCH /api/tasks/{id}/status`
+- `DELETE /api/tasks/{id}`
 - `POST /api/tasks/generate`
-- `GET /api/dashboard/summary`
+- `GET /api/dashboard/summary?start=&end=`
 - `POST /api/ai/chat`
 
-后端能力：
+### 5.4 数据模型
 
-- JWT 登录认证和过期处理。
-- 用户数据隔离。
-- MySQL 持久化。
-- 统一异常响应。
-- DeepSeek 可配置接入。
-- DeepSeek 未配置或不可用时返回 fallback。
+用户：
+
+- `id`
+- `username`
+- `email`
+- `passwordHash`
+- `createdAt`
+
+科目：
+
+- `id`
+- `user`
+- `name`
+- `category`
+- `color`
+- `targetHours`
+- `createdAt`
+
+任务：
+
+- `id`
+- `user`
+- `subject`
+- `title`
+- `description`
+- `taskDate`
+- `status`
+- `priority`
+- `plannedMinutes`
+- `actualMinutes`
+- `completedAt`
+- `createdAt`
+
+### 5.5 配置计划
+
+后端环境变量：
+
+- `DB_URL`
+- `DB_USERNAME`
+- `DB_PASSWORD`
+- `JWT_SECRET`
+- `JWT_EXPIRATION_MINUTES`
+- `CORS_ALLOWED_ORIGINS`
+- `SPRING_AI_MODEL_CHAT`
+- `DEEPSEEK_API_KEY`
+- `DEEPSEEK_MODEL`
+
+默认策略：
+
+- 本地后端默认使用 MySQL。
+- 测试环境使用 H2。
+- 默认 `SPRING_AI_MODEL_CHAT=none`，避免没有 DeepSeek Key 时启动失败。
+- 只有显式设置 `SPRING_AI_MODEL_CHAT=deepseek` 且提供 Key 时才调用真实模型。
+
+### 5.6 测试计划
+
+后端自动化测试：
+
+- 注册、登录、当前用户。
+- 未登录访问受保护接口返回 `401`。
+- 健康检查公开可访问。
+- 科目和任务按用户隔离。
+- 任务状态更新能记录完成信息。
+- 看板统计能反映任务完成情况。
+- AI 未配置 DeepSeek 时返回 `fallback: true`。
+
+手动联调：
+
+- 前端 Mock 模式完成一遍核心流程。
+- 切换 `VITE_USE_MOCK=false` 后，用真实 API 完成同样流程。
+- 断开 DeepSeek Key，确认 AI fallback 不影响页面。
+
+### 5.7 当前完成状态
+
+已完成：
+
+- 后端基础目录、Spring Boot 应用入口、配置模板。
+- `GET /api/health` 公开健康检查。
+- JWT 注册、登录、当前用户接口。
+- 科目、任务、看板、AI 问答接口。
+- MySQL 运行配置和 H2 测试配置。
+- DeepSeek 可选启用和 fallback 答复。
+- 统一业务异常、校验异常、参数格式异常和认证异常响应。
+- 后端测试用例覆盖认证、公开健康检查、用户隔离、任务状态、看板统计、AI fallback 和非法参数。
+
+待验证：
+
+- 运行 `mvn test` 进行完整后端测试。
+- 启动本地 MySQL 后运行后端服务。
+- 前端设置 `VITE_USE_MOCK=false` 后做真实 API 联调。
+
+注意：以上验证会触发 Maven/前端依赖或构建缓存写入，执行前需要先确认 C 盘预计增量。
 
 ## 6. 验收标准
 

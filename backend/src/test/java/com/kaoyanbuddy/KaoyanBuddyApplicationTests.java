@@ -43,7 +43,7 @@ class KaoyanBuddyApplicationTests {
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(json(Map.of("username", username, "password", "secret123"))))
+                        .content(json(Map.of("username", " " + username + " ", "password", "secret123"))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").isString());
     }
@@ -51,7 +51,8 @@ class KaoyanBuddyApplicationTests {
     @Test
     void protectedRoutesRequireJwt() throws Exception {
         mockMvc.perform(get("/api/subjects"))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message", is("请先登录")));
     }
 
     @Test
@@ -100,6 +101,45 @@ class KaoyanBuddyApplicationTests {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalTasks", greaterThanOrEqualTo(1)))
                 .andExpect(jsonPath("$.completedTasks", greaterThanOrEqualTo(1)));
+    }
+
+    @Test
+    void usersCannotReadEachOthersSubjectData() throws Exception {
+        String firstToken = register("first_" + UUID.randomUUID().toString().substring(0, 8));
+        String secondToken = register("second_" + UUID.randomUUID().toString().substring(0, 8));
+        Long firstSubjectId = createSubject(firstToken);
+
+        mockMvc.perform(get("/api/subjects").header("Authorization", bearer(secondToken)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()", is(0)));
+
+        mockMvc.perform(get("/api/tasks")
+                        .header("Authorization", bearer(secondToken))
+                        .param("subjectId", String.valueOf(firstSubjectId)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void dashboardRejectsInvalidDateRange() throws Exception {
+        String token = register("range_" + UUID.randomUUID().toString().substring(0, 8));
+
+        mockMvc.perform(get("/api/dashboard/summary")
+                        .header("Authorization", bearer(token))
+                        .param("start", LocalDate.now().toString())
+                        .param("end", LocalDate.now().minusDays(1).toString()))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message", is("开始日期不能晚于结束日期")));
+    }
+
+    @Test
+    void invalidEnumQueryReturnsReadableError() throws Exception {
+        String token = register("enum_" + UUID.randomUUID().toString().substring(0, 8));
+
+        mockMvc.perform(get("/api/tasks")
+                        .header("Authorization", bearer(token))
+                        .param("status", "UNKNOWN"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message", is("请求参数格式不正确")));
     }
 
     @Test
