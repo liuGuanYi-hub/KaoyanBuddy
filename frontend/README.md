@@ -26,6 +26,13 @@ VITE_USE_MOCK=true
 VITE_USE_MOCK=false
 ```
 
+本机真实联调推荐 `frontend/.env`：
+
+```text
+VITE_API_BASE_URL=http://localhost:8080/api
+VITE_USE_MOCK=false
+```
+
 ## 页面
 
 - 登录/注册

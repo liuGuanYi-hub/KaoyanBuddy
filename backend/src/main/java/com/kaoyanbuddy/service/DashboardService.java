@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class DashboardService {
@@ -23,6 +24,7 @@ public class DashboardService {
         this.taskRepository = taskRepository;
     }
 
+    @Transactional(readOnly = true)
     public DashboardSummaryResponse summary(UserAccount user, LocalDate start, LocalDate end) {
         LocalDate resolvedEnd = end == null ? LocalDate.now() : end;
         LocalDate resolvedStart = start == null ? resolvedEnd.minusDays(6) : start;

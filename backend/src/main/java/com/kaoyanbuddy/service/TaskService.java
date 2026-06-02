@@ -32,6 +32,7 @@ public class TaskService {
         this.subjectService = subjectService;
     }
 
+    @Transactional(readOnly = true)
     public List<TaskResponse> list(UserAccount user, LocalDate date, TaskStatus status, Long subjectId) {
         Subject subject = subjectId == null ? null : subjectService.getSubject(user, subjectId);
         return taskRepository.findByUserOrderByTaskDateAscCreatedAtAsc(user)
