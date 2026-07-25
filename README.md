@@ -97,3 +97,10 @@ DEEPSEEK_API_KEY=你的 Key
 ## 注意事项
 
 依赖安装、构建、测试和 MySQL 建库建表可能写入本机缓存或数据库目录。任何会减少 C 盘容量的操作，执行前都需要先确认预计增量。
+
+## 动态系统架构图
+
+![KaoyanBuddy 动态系统架构图](docs/architecture/dynamic-archify-architecture.svg)
+
+- [打开交互式动态架构图](docs/architecture/dynamic-archify-architecture.html)
+- [查看架构源数据](docs/architecture/dynamic-archify-architecture.json)

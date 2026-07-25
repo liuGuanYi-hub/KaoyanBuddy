@@ -1,0 +1,144 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "KaoyanBuddy",
+    "subtitle": "Study planning, AI Q&A, and progress tracking",
+    "output": "dynamic-archify-architecture.html"
+  },
+  "components": [
+    {
+      "id": "student",
+      "type": "external",
+      "label": "Student",
+      "sublabel": "Browser user",
+      "pos": [
+        30,
+        250
+      ],
+      "size": [
+        140,
+        64
+      ]
+    },
+    {
+      "id": "frontend",
+      "type": "frontend",
+      "label": "React Frontend",
+      "sublabel": "Tasks + dashboard",
+      "pos": [
+        250,
+        250
+      ],
+      "size": [
+        160,
+        64
+      ]
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "Spring Boot API",
+      "sublabel": "Study services",
+      "pos": [
+        500,
+        250
+      ],
+      "size": [
+        160,
+        64
+      ]
+    },
+    {
+      "id": "auth",
+      "type": "security",
+      "label": "JWT Auth",
+      "sublabel": "User isolation",
+      "pos": [
+        500,
+        100
+      ],
+      "size": [
+        160,
+        64
+      ]
+    },
+    {
+      "id": "db",
+      "type": "database",
+      "label": "MySQL / H2",
+      "sublabel": "Tasks + subjects",
+      "pos": [
+        760,
+        250
+      ],
+      "size": [
+        160,
+        64
+      ]
+    },
+    {
+      "id": "ai",
+      "type": "cloud",
+      "label": "DeepSeek",
+      "sublabel": "Optional AI answer",
+      "pos": [
+        760,
+        100
+      ],
+      "size": [
+        160,
+        64
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "KaoyanBuddy application",
+      "wraps": [
+        "frontend",
+        "api",
+        "auth"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "from": "student",
+      "to": "frontend",
+      "label": "study",
+      "variant": "emphasis"
+    },
+    {
+      "from": "frontend",
+      "to": "api",
+      "label": "REST",
+      "variant": "emphasis"
+    },
+    {
+      "from": "api",
+      "to": "auth",
+      "label": "token",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "route": "orthogonal-v",
+      "variant": "security"
+    },
+    {
+      "from": "api",
+      "to": "db",
+      "label": "CRUD"
+    },
+    {
+      "from": "api",
+      "to": "ai",
+      "label": "chat",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "route": "orthogonal-v",
+      "variant": "dashed"
+    }
+  ],
+  "cards": []
+}
